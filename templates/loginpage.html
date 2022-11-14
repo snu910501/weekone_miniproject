@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login page</title>
+    <link rel="stylesheet" href="../static/css/loginpage.css">
+    <script src="https://code.jquery.com/jquery-3.6.1.js"
+            integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap"
+          rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <div class="container_div">
+        <div class="left_container">
+            <div class="left_container_div">
+                <div class="login_container">
+                    <div class="login_container_text_container">
+                        <span>Memeber Login</span><br>
+                        please fill your user info
+                    </div>
+
+                    <!--login시 랜딩 페이지-->
+                    <div class="login_page_container">
+                        <div class="login_id_input_container">
+                            <input type="text" class="login_id_input" placeholder="user Id">
+                        </div>
+                        <div class="login_pw_input_container">
+                            <input type="password" class="login_pw_input" placeholder="password">
+                        </div>
+                        <div class="login_btn_container">
+                            <button class="login_btn">Login</button>
+                        </div>
+                    </div>
+                    <!--SignUp시 랜딩 페이지-->
+                    <div style="display: none" class="signup_page_container">
+                        <div class="signup_id_input_container">
+                            <input type="text" class="signup_id_input" placeholder="user Id">
+                        </div>
+                        <div class="signup_pw_input_container">
+                            <input type="password" class="signup_pw_input" placeholder="password">
+                        </div>
+                        <div class="signup_pw_input_container_check">
+                            <input type="password" class="signup_pw_input_check" placeholder="password">
+                        </div>
+                        <div class="signup_btn_container">
+                            <button onclick="signUp()" class="signup_btn">Sign Up</button>
+                        </div>
+                    </div>
+
+                    <div class="signup_container">Not a member yet? <span onclick="changeSingup()"> Sign Up!</span>
+                    </div>
+                    <div style="display: none" class="go_login_page">Already our member? <span onclick="changeLogin()"> Login!</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="right_container">
+            <div class="right_container_div">
+                <div class="right_container_top">Your Experience<br>
+                    Become Someone's Dream
+                </div>
+                <div class="right_container_bottom">We share people's experiences, and through this <Br> we hope that
+                    many people will have a dream of travelling.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+
+<script>
+
+    let id = ''
+    let pw = ''
+    let pw_check = ''
+
+    <!--    signup버튼 클릭시 화면 전환 함수    -->
+    function changeSingup() {
+        $('.login_page_container').hide()
+        $('.signup_page_container').show()
+
+        $('.signup_container').hide()
+        $('.go_login_page').show()
+    }
+
+    <!--    Login버튼 클릭시 화면 전환 함수    -->
+    function changeLogin() {
+        $('.login_page_container').show()
+        $('.signup_page_container').hide()
+
+        $('.signup_container').show()
+        $('.go_login_page').hide()
+    }
+
+    //    회원가입 Form이 올바르게 작성 되었는지 판단하는 함수
+    $('.signup_pw_input_check').keyup(function() {
+        id = $('.signup_id_input').val()
+        pw = $('.signup_pw_input').val()
+        pw_check = $('.signup_pw_input_check').val()
+
+        console.log(id,pw,pw_check)
+
+        if(id != '' && pw != '' && pw_check != '') {
+            $('.signup_btn').attr('style','color: #FF7583; border: 0.5px solid #FF7583')
+        }
+
+        if(pw == pw_check) {
+            $('.signup_pw_input_check').attr('style','border:1.5px solid green')
+        } else {
+            $('.signup_pw_input_check').attr('style','border:1.5px solid red')
+        }
+    })
+
+    function signUp(){
+        let id = $('.signup_id_input').val()
+        let pw = $('.signup_pw_input').val()
+        let pw_check = $('.signup_pw_input_check').val()
+
+        //아이디, 비밀번호가 빈칸인지 아닌지
+        if(id != '' && pw != '' && pw_check != '') {
+            //아이디 길이가 적절한지
+            if(id.length >=8 && id.length <= 15){
+                //비밀번호가 일치하는지
+                if(pw == pw_check) {
+                    $.ajax({
+                        type: 'POST',
+                        url : '/signUp',
+                        data : {
+                            id_give : id,
+                            pw_give : pw
+                        },
+                        success : function(res) {
+                            if(res['result'] == 'success') {
+                                alert('환영합니다.')
+                                window.location.href = '/'
+                            } else {
+                                alert(res['msg'])
+                            }
+                        }
+                    })
+                }
+            } else {
+                alert('아이디는 8자리 이상 15자리 이하여야 합니다.')
+            }
+        } else {
+            alert('아이디와 비밀번호를 제대로 입력해주세요.')
+            return
+        }
+    }
+
+
+</script>
+</html>
