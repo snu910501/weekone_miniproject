@@ -2,9 +2,262 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>UploadPage</title>
+    <link rel="stylesheet" href="../static/css/uploadpage.css">
+    <script src="https://code.jquery.com/jquery-3.6.1.js"
+            integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap"
+          rel="stylesheet">
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.809.0.min.js"></script>
+
+    <script type="text/javascript"
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=68015be01dab0a555d47266aa18bd55a&libraries=services"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <body>
+<div class="container">
+    <div class="home_container">
+        <div class="home_container_div">
+            <button class="home_btn">홈으로</button>
+        </div>
+    </div>
+    <div class="upload_div">
+        <div class="upload_container">
+            <div class="upload_container_div">
+                <div class="upload_photo_container">
+                    <div class="upload_photo_div">
+                        <div class="upload_photo_img_contianer_one">
+                            <div class="upload_photo_img_contianer_div_one">
+                                <label for="upload_photo_input_one" id="upload_photo_label_one"></label>
+                                <input type="file" id="upload_photo_input_one" onchange="setThumbnail(event)">
+                            </div>
+                        </div>
+                        <div class="upload_photo_img_contianer_two">
+                            <div class="upload_photo_img_contianer_div_two">
+                                <label for="upload_photo_input_two" id="upload_photo_label_two"></label>
+                                <input type="file" id="upload_photo_input_two" onchange="console.log(event)">
+                            </div>
+                        </div>
+                        <div class="upload_photo_img_contianer_three">
+                            <div class="upload_photo_img_contianer_div_three">
+                                <label for="upload_photo_input_three" id="upload_photo_label_three"></label>
+                                <input type="file" id="upload_photo_input_three" onchange="setThumbnail(event)">
+                            </div>
+
+                        </div>
+                        <div class="upload_photo_img_contianer_four">
+                            <div class="upload_photo_img_contianer_div_four">
+                                <label for="upload_photo_input_four" id="upload_photo_label_four"></label>
+                                <input type="file" id="upload_photo_input_four" onchange="setThumbnail(event)">
+                            </div>
+                        </div>
+                        <div class="upload_photo_img_contianer_five">
+                            <div class="upload_photo_img_contianer_div_five">
+                                <label for="upload_photo_input_five" id="upload_photo_label_five"></label>
+                                <input type="file" id="upload_photo_input_five" onchange="setThumbnail(event)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="upload_content_container">
+                    <div class="upload_content_container_div">
+                        <div class="upload_content_textarea">
+                            <textarea name="" id="textarea" cols="30" rows="10" placeholder="여행은 어떠셨나요?"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="upload_map_container">여행한 곳이 어딘가요?
+                    <div class="upload_map_container_div">
+                        <div class="map_left_container">
+                            <div class="address_input_container">
+                                <label for="address_kakao" id="address_kakao_label"></label>
+                                <input type="text" id="address_kakao" name="address" readonly>
+                                <input style="display: none" type="text" name="address_detail"/>
+                            </div>
+
+                        </div>
+                        <div class="map_right_container">
+                            <div id="map" style="width:100%;height:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="upload_btn_container">
+                    <button class="upload_btn">업로드</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
+
+<script>
+
+    let photos = []
+    let address = ''
+
+    function setThumbnail(event) {
+        let reader = new FileReader()
+        let input = event.path[0]
+        let label = input.previousSibling.previousSibling
+
+        // let parent = event.path[1]
+
+        reader.onload = function (event) {
+            label.setAttribute('style', `background-image:url(${event.target.result}); width:200px; height:200px; background-size:cover;`)
+            photos.push(input.files[0])
+            // putFile(input.files[0])
+
+        }
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function initPutFile() {
+        for (let i = 0; i < photos.length; i++) {
+            putFile(photos[i])
+        }
+    }
+
+    const putFile = file => {
+        const albumBucketName = 'testinstabucket'; // S3의 버킷 이름
+        const region = 'ap-northeast-2'; // 서울
+        const accessKeyId = 'AKIARZNSTIKGG4JETEYJ'; // IAM에서 생성한 사용자의 accessKeyId
+        const secretAccessKey = 'jW3r7KlZLd+8bzw6yu9/WoPWi1pVqtbX9SKWIxmO'; // IAM에서 생성한 사용자의 secretAccessKey
+
+        AWS.config.update({
+            region,
+            accessKeyId,
+            secretAccessKey
+        });
+
+        const upload = new AWS.S3.ManagedUpload({
+            params: {
+                Bucket: albumBucketName,
+                Key: file.name,
+                Body: file,
+                // ACL: "public-read"
+            }
+        });
+
+        const promise = upload.promise();
+
+        promise.then(
+            function (data) {
+                console.log("Successfully uploaded photo.");
+                console.log(data)
+            },
+            function (err) {
+                return console.log("There was an error uploading your photo: ", err.message);
+            }
+        );
+    };
+    window.onload = function () {
+        document.getElementById("address_kakao").addEventListener("click", function () { //주소입력칸을 클릭하면
+            //카카오 지도 발생
+            new daum.Postcode({
+                oncomplete: function (data) { //선택시 입력값 세팅
+                    document.getElementById("address_kakao").value = data.address; // 주소 넣기
+                    document.querySelector("input[name=address_detail]").focus(); //상세입력 포커싱
+                    showMap(data.address)
+                }
+            }).open();
+        });
+    }
+
+
+    //지도 표시
+    function showMap(addr) {
+        var mapContainer = document.getElementById('map'), // 지도를 표시할 div
+            mapOption = {
+                center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
+                level: 3 // 지도의 확대 레벨
+            };
+
+        // 지도를 생성합니다
+        var map = new kakao.maps.Map(mapContainer, mapOption);
+
+        // 주소-좌표 변환 객체를 생성합니다
+        var geocoder = new kakao.maps.services.Geocoder();
+
+        // 주소로 좌표를 검색합니다
+        geocoder.addressSearch(addr, function (result, status) {
+
+            // 정상적으로 검색이 완료됐으면
+            if (status === kakao.maps.services.Status.OK) {
+
+                var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+                // 결과값으로 받은 위치를 마커로 표시합니다
+                var marker = new kakao.maps.Marker({
+                    map: map,
+                    position: coords
+                });
+
+                // 인포윈도우로 장소에 대한 설명을 표시합니다
+                // var infowindow = new kakao.maps.InfoWindow({
+                //     content: '<div style="width:150px;text-align:center;padding:6px 0;">우리회사</div>'
+                // });
+                // infowindow.open(map, marker);
+
+                // 지도의 중심을 결과값으로 받은 위치로 이동시킵니다
+                map.setCenter(coords);
+            }
+        });
+    }
+
+    //
+    // //주소 API
+    // function sample6_execDaumPostcode() {
+    //     new daum.Postcode({
+    //         oncomplete: function (data) {
+    //             // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+    //
+    //             // 각 주소의 노출 규칙에 따라 주소를 조합한다.
+    //             // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+    //             var addr = ''; // 주소 변수
+    //             var extraAddr = ''; // 참고항목 변수
+    //
+    //             //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+    //             if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+    //                 addr = data.roadAddress;
+    //                 address = addr
+    //                 showMap()
+    //             } else { // 사용자가 지번 주소를 선택했을 경우(J)
+    //                 addr = data.jibunAddress;
+    //             }
+    //
+    //             // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
+    //             if (data.userSelectedType === 'R') {
+    //                 // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+    //                 // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+    //                 if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+    //                     extraAddr += data.bname;
+    //                 }
+    //                 // 건물명이 있고, 공동주택일 경우 추가한다.
+    //                 if (data.buildingName !== '' && data.apartment === 'Y') {
+    //                     extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+    //                 }
+    //                 // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+    //                 if (extraAddr !== '') {
+    //                     extraAddr = ' (' + extraAddr + ')';
+    //                 }
+    //                 // 조합된 참고항목을 해당 필드에 넣는다.
+    //                 document.getElementById("sample6_extraAddress").value = extraAddr;
+    //
+    //             } else {
+    //                 document.getElementById("sample6_extraAddress").value = '';
+    //             }
+    //
+    //             // 우편번호와 주소 정보를 해당 필드에 넣는다.
+    //             document.getElementById('sample6_postcode').value = data.zonecode;
+    //             document.getElementById("sample6_address").value = addr;
+    //             // 커서를 상세주소 필드로 이동한다.
+    //             document.getElementById("sample6_detailAddress").focus();
+    //         }
+    //     }).open();
+    // }
+</script>
+
 </html>

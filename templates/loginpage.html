@@ -139,6 +139,10 @@
                                 alert('환영합니다.')
                                 window.location.href = '/'
                             } else {
+                                document.querySelector('.signup_id_input').value = ''
+                                document.querySelector('.signup_pw_input').value = ''
+                                document.querySelector('.signup_pw_input_check').value = ''
+
                                 alert(res['msg'])
                             }
                         }

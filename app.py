@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from pymongo import MongoClient
+import login
 
 client = MongoClient('mongodb+srv://snu910501:gkftndlTek1!@cluster0.rp2hlij.mongodb.net/?retryWrites=true&w=majority')
 db = client.miniproject
@@ -18,7 +19,7 @@ def signUp():
     id_receive = request.form['id_give']
     pw_receive = request.form['pw_give']
 
-    check_id = id_check(id_receive)
+    check_id = login.id_check(id_receive)
 
     if(check_id != False) :
         return jsonify({'result' : 'fail', 'msg':'아이디가 중복됩니다.'})
@@ -27,11 +28,12 @@ def signUp():
         db.user.insert_one({'id': id_receive, 'pw': hash_pw})
         return jsonify({'result' : 'success'})
 
-def id_check(id) :
-    id_check = bool(db.user.find_one({'id': id}, {'_id' : False}))
-    return id_check
-
-
+@app.route('/upload')
+def upload() :
+    return render_template('/uploadpage.html')
+@app.route('/main')
+def main() :
+    return render_template('/mainpage.html')
 
 
 

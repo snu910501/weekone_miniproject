@@ -1,0 +1,326 @@
+* {
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+}
+
+.upload_div {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload_container {
+    width: 1080px;
+    height: 100%;
+
+    padding: 30px;
+}
+
+.upload_container_div {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/*-----------------------------사진 업로드-----------------------------------*/
+
+.upload_photo_container {
+    width: 100%;
+    height: 300px;
+    padding: 30px;
+}
+
+.upload_photo_div {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.upload_photo_img_contianer_one {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+/*.upload_photo_img_contianer_div_one{*/
+/*    width: 120px;*/
+/*    height: 120px;*/
+/*    border: 1px solid blue;*/
+/*}*/
+
+#upload_photo_label_one {
+    display: block;
+    width: 100px;
+    height: 100px;
+    background-color: transparent;
+    color: white;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid #ff7583;
+    background-image: url(../img/jongwan/plus_button.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#upload_photo_input_one {
+    display: none;
+}
+
+.upload_photo_img_contianer_two {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+#upload_photo_label_two {
+    display: block;
+    width: 100px;
+    height: 100px;
+    background-color: transparent;
+    color: white;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid #ff7583;
+    background-image: url(../img/jongwan/plus_button.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#upload_photo_input_two {
+    display: none;
+}
+
+.upload_photo_img_contianer_three {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+#upload_photo_label_three {
+    display: block;
+    width: 100px;
+    height: 100px;
+    background-color: transparent;
+    color: white;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid #ff7583;
+    background-image: url(../img/jongwan/plus_button.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#upload_photo_input_three {
+    display: none;
+}
+
+.upload_photo_img_contianer_four {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+#upload_photo_label_four {
+    display: block;
+    width: 100px;
+    height: 100px;
+    background-color: transparent;
+    color: white;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid #ff7583;
+    background-image: url(../img/jongwan/plus_button.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#upload_photo_input_four {
+    display: none;
+}
+
+
+.upload_photo_img_contianer_five {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+#upload_photo_label_five {
+    display: block;
+    width: 100px;
+    height: 100px;
+    background-color: transparent;
+    color: white;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid #ff7583;
+    background-image: url(../img/jongwan/plus_button.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#upload_photo_input_five {
+    display: none;
+}
+
+/*------------------------------내용 업로드-----------------------------------*/
+.upload_content_container {
+    width: 100%;
+    height: 300px;
+}
+
+.upload_content_container_div {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.upload_content_textarea {
+    width: 100%;
+    height: 100%;
+}
+
+#textarea {
+    width: 100%;
+    height: 100%;
+    resize: none;
+    font-size: 18px;
+    padding: 5px;
+}
+
+/*-------------------------------날씨 업로드-----------------------------------*/
+
+.upload_map_container {
+    width: 100%;
+    height: 500px;
+    padding: 40px;
+}
+
+.upload_map_container_div {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.map_left_container {
+    width: 50%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+.map_right_container {
+    width: 50%;
+    height: 100%;
+    border: 1px solid brown;
+}
+
+.address_input_container {
+    width: 160px;
+    height: 160px;
+}
+
+#address_kakao {
+    display: none;
+}
+
+#address_kakao_label {
+    display: block;
+    width: 150px;
+    height: 150px;
+    background-image: url(../img/jongwan/photo_btn.png);
+    background-size: cover;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/*---------------------------------버튼-----------------------------------*/
+
+.upload_btn_container{
+    width: 300px;
+    height: 50px;
+    margin-top: 50px;
+}
+
+.upload_btn{
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: #ff7583;
+    font-size: 18px;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+/*---------------------------------home--------------------------------------*/
+
+.home_container{
+    width: 100%;
+    height: 50px;
+}
+
+.home_container_div{
+    width: 100%;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.home_btn{
+    width: 200px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background-color: #ff7583;
+}
