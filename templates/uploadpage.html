@@ -2,9 +2,306 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>UploadPage</title>
+    <link rel="stylesheet" href="../static/css/uploadpage.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
+    <!--    <script src="https://code.jquery.com/jquery-3.6.1.js"-->
+    <!--            integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap"
+          rel="stylesheet">
+
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.809.0.min.js"></script>
+
+    <script type="text/javascript"
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=68015be01dab0a555d47266aa18bd55a&libraries=services"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css"/>
+    <script src="../static/js/tagify.js"></script>
 </head>
 <body>
+<div class="container">
+    <div class="home_container">
+        <div class="home_container_div">
+            <button class="home_btn">홈으로</button>
+        </div>
+    </div>
+    <div class="upload_div">
+        <div class="upload_container">
+            <div class="upload_container_div">
+                <div class="upload_photo_container">
+                    <div class="upload_photo_div">
+                        <div class="upload_photo_img_contianer_one">
+                            <div class="upload_photo_img_contianer_div_one">
+                                <label for="upload_photo_input_one" id="upload_photo_label_one"></label>
+                                <input type="file" id="upload_photo_input_one" onchange="setThumbnail(event)">
+                            </div>
+                        </div>
+                        <div class="upload_photo_img_contianer_two">
+                            <div class="upload_photo_img_contianer_div_two">
+                                <label for="upload_photo_input_two" id="upload_photo_label_two"></label>
+                                <input type="file" id="upload_photo_input_two" onchange="setThumbnail(event)">
+                            </div>
+                        </div>
+                        <div class="upload_photo_img_contianer_three">
+                            <div class="upload_photo_img_contianer_div_three">
+                                <label for="upload_photo_input_three" id="upload_photo_label_three"></label>
+                                <input type="file" id="upload_photo_input_three" onchange="setThumbnail(event)">
+                            </div>
 
+                        </div>
+                        <div class="upload_photo_img_contianer_four">
+                            <div class="upload_photo_img_contianer_div_four">
+                                <label for="upload_photo_input_four" id="upload_photo_label_four"></label>
+                                <input type="file" id="upload_photo_input_four" onchange="setThumbnail(event)">
+                            </div>
+                        </div>
+                        <div class="upload_photo_img_contianer_five">
+                            <div class="upload_photo_img_contianer_div_five">
+                                <label for="upload_photo_input_five" id="upload_photo_label_five"></label>
+                                <input type="file" id="upload_photo_input_five" onchange="setThumbnail(event)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="upload_content_container">
+                    <div class="upload_content_container_div">
+                        <div class="upload_content_textarea">
+                            <textarea name="" id="textarea" cols="30" rows="10" placeholder="여행은 어떠셨나요?"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="upload_map_container">여행한 곳이 어딘가요?
+                    <div class="upload_map_container_div">
+                        <div class="map_left_container">
+                            <div class="address_input_container">
+                                <label for="address_kakao" id="address_kakao_label"></label>
+                                <input type="text" id="address_kakao" name="address" readonly>
+                                <input style="display: none" type="text" name="address_detail"/>
+                            </div>
+
+                        </div>
+                        <div class="map_right_container">
+                            <div id="map" style="width:100%;height:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tag_container">
+                    <div class="tag_container_div">
+                        <input class="tag_input" name='tags' placeholder='태그하세용'
+                               ,data-blacklist='.NET,PHP'>
+
+                    </div>
+                </div>
+                <div class="upload_btn_container">
+                    <button class="upload_btn" onclick="upload()">업로드</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
+
+<script>
+
+    let photos = []
+    let address = ''
+    let tags = []
+    let photo_url = []
+    let number = 0
+    let s3number = 0
+    let text = ''
+
+    var input = document.querySelector('input[name="tags"]'),
+        // init Tagify script on the above inputs
+        tagify = new Tagify(input, {
+            whitelist: tagify_whitelist,
+            maxTags: 10,
+            dropdown: {
+                maxItems: 20,           // <- mixumum allowed rendered suggestions
+                classname: "tags-look", // <- custom classname for this dropdown, so it could be targeted
+                enabled: 1,             // <- show suggestions on focus
+                closeOnSelect: false    // <- do not hide the suggestions dropdown once an item has been selected
+            }
+        })
+
+
+    function setThumbnail(event) {
+        let reader = new FileReader()
+        let input = event.path[0]
+        let label = input.previousSibling.previousSibling
+
+        // let parent = event.path[1]
+
+        reader.onload = function (event) {
+            label.setAttribute('style', `background-image:url(${event.target.result}); width:200px; height:200px; background-size:cover;`)
+            photos.push(input.files[0])
+        }
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function initPutFile() {
+        for (let i = 0; i < photos.length; i++) {
+            putFile(photos[i])
+        }
+    }
+
+    async function putFile(file) {
+        const albumBucketName = 'testinstabucket'; // S3의 버킷 이름
+        const region = 'ap-northeast-2'; // 서울
+        const accessKeyId = 'AKIARZNSTIKGG4JETEYJ'; // IAM에서 생성한 사용자의 accessKeyId
+        const secretAccessKey = 'jW3r7KlZLd+8bzw6yu9/WoPWi1pVqtbX9SKWIxmO'; // IAM에서 생성한 사용자의 secretAccessKey
+
+        AWS.config.update({
+            region,
+            accessKeyId,
+            secretAccessKey
+        });
+
+        const upload = new AWS.S3.ManagedUpload({
+            params: {
+                Bucket: albumBucketName,
+                Key: file.name,
+                Body: file,
+                // ACL: "public-read"
+            }
+        });
+
+        const promise = upload.promise();
+
+        promise.then(
+            function (data) {
+                s3number ++
+                console.log("Successfully uploaded photo.")
+                photo_url.push(data.Location)
+                if(number == s3number) {
+                    uploadPost()
+                } else{
+                    return
+                }
+            },
+            function (err) {
+                return console.log("There was an error uploading your photo: ", err.message);
+            },
+        );
+    };
+    window.onload = function () {
+        document.getElementById("address_kakao").addEventListener("click", function () { //주소입력칸을 클릭하면
+            //카카오 지도 발생
+            new daum.Postcode({
+                oncomplete: function (data) { //선택시 입력값 세팅
+                    document.getElementById("address_kakao").value = data.address; // 주소 넣기
+                    document.querySelector("input[name=address_detail]").focus(); //상세입력 포커싱
+                    showMap(data.address)
+                    address = data.address
+                }
+            }).open();
+        });
+    }
+
+
+    //지도 표시
+    function showMap(addr) {
+        var mapContainer = document.getElementById('map'), // 지도를 표시할 div
+            mapOption = {
+                center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
+                level: 3 // 지도의 확대 레벨
+            };
+
+        // 지도를 생성합니다
+        var map = new kakao.maps.Map(mapContainer, mapOption);
+
+        // 주소-좌표 변환 객체를 생성합니다
+        var geocoder = new kakao.maps.services.Geocoder();
+
+        // 주소로 좌표를 검색합니다
+        geocoder.addressSearch(addr, function (result, status) {
+
+            // 정상적으로 검색이 완료됐으면
+            if (status === kakao.maps.services.Status.OK) {
+
+                var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+                // 결과값으로 받은 위치를 마커로 표시합니다
+                var marker = new kakao.maps.Marker({
+                    map: map,
+                    position: coords
+                });
+
+                // 인포윈도우로 장소에 대한 설명을 표시합니다
+                // var infowindow = new kakao.maps.InfoWindow({
+                //     content: '<div style="width:150px;text-align:center;padding:6px 0;">우리회사</div>'
+                // });
+                // infowindow.open(map, marker);
+
+                // 지도의 중심을 결과값으로 받은 위치로 이동시킵니다
+                map.setCenter(coords);
+            }
+        });
+    }
+
+    async function upload() {
+        // let photos = []
+        // let address = ''
+        // let tags = []
+        // let photo_url = []
+
+        let photo_list = photos
+        text = $('#textarea').val()
+        let tag_list = tags
+        number = photo_list.length
+        tag_list_child = $('.tagify').children()
+
+        // console.log(tag_list_child[0].getAttribute('title'))
+        for (let i = 0; i < tag_list_child.length - 1; i++) {
+            tags.push(tag_list_child[i].getAttribute('title'))
+        }
+
+        for (let i = 0; i < photo_list.length; i++) {
+            console.log('언제 실행되니')
+            putFile(photo_list[i])
+        }
+
+        // console.log(typeof photo_url)
+        // console.log(photo_url)
+        // console.log(`textogive : ${text}`)
+        // console.log(`태크 유알엘 있니 없니 ${tag_list}`)
+        console.log(`포토 유알엘 있니 없니 ${photo_url}`)
+        await log()
+
+    }
+
+    function log() {
+        console.log('hi')
+    }
+
+    async function uploadPost() {
+        let urls = photo_url
+        console.log(`ursl : ${urls}`)
+        await $.ajax({
+            type: 'POST',
+            url: '/post/upload',
+            data: {
+                url_give: urls,
+                text_give: text,
+                address_give: address,
+                tag_give: tags
+            },
+            success: function (res) {
+                if (res['result'] == 'success') {
+                    console.log('업데이트 성공')
+                    window.location.href = '/main'
+                } else {
+                    console.log('업데이트 실패')
+                }
+            }
+        })
+    }
+
+</script>
+
 </html>

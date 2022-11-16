@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap"
           rel="stylesheet">
+     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -31,7 +32,7 @@
                             <input type="password" class="login_pw_input" placeholder="password">
                         </div>
                         <div class="login_btn_container">
-                            <button class="login_btn">Login</button>
+                            <button class="login_btn" onclick="login()">Login</button>
                         </div>
                     </div>
                     <!--SignUp시 랜딩 페이지-->
@@ -98,47 +99,51 @@
     }
 
     //    회원가입 Form이 올바르게 작성 되었는지 판단하는 함수
-    $('.signup_pw_input_check').keyup(function() {
+    $('.signup_pw_input_check').keyup(function () {
         id = $('.signup_id_input').val()
         pw = $('.signup_pw_input').val()
         pw_check = $('.signup_pw_input_check').val()
 
-        console.log(id,pw,pw_check)
+        console.log(id, pw, pw_check)
 
-        if(id != '' && pw != '' && pw_check != '') {
-            $('.signup_btn').attr('style','color: #FF7583; border: 0.5px solid #FF7583')
+        if (id != '' && pw != '' && pw_check != '') {
+            $('.signup_btn').attr('style', 'color: #FF7583; border: 0.5px solid #FF7583')
         }
 
-        if(pw == pw_check) {
-            $('.signup_pw_input_check').attr('style','border:1.5px solid green')
+        if (pw == pw_check) {
+            $('.signup_pw_input_check').attr('style', 'border:1.5px solid green')
         } else {
-            $('.signup_pw_input_check').attr('style','border:1.5px solid red')
+            $('.signup_pw_input_check').attr('style', 'border:1.5px solid red')
         }
     })
 
-    function signUp(){
+    function signUp() {
         let id = $('.signup_id_input').val()
         let pw = $('.signup_pw_input').val()
         let pw_check = $('.signup_pw_input_check').val()
 
         //아이디, 비밀번호가 빈칸인지 아닌지
-        if(id != '' && pw != '' && pw_check != '') {
+        if (id != '' && pw != '' && pw_check != '') {
             //아이디 길이가 적절한지
-            if(id.length >=8 && id.length <= 15){
+            if (id.length >= 8 && id.length <= 15) {
                 //비밀번호가 일치하는지
-                if(pw == pw_check) {
+                if (pw == pw_check) {
                     $.ajax({
                         type: 'POST',
-                        url : '/signUp',
-                        data : {
-                            id_give : id,
-                            pw_give : pw
+                        url: '/signUp',
+                        data: {
+                            id_give: id,
+                            pw_give: pw
                         },
-                        success : function(res) {
-                            if(res['result'] == 'success') {
+                        success: function (res) {
+                            if (res['result'] == 'success') {
                                 alert('환영합니다.')
                                 window.location.href = '/'
                             } else {
+                                document.querySelector('.signup_id_input').value = ''
+                                document.querySelector('.signup_pw_input').value = ''
+                                document.querySelector('.signup_pw_input_check').value = ''
+
                                 alert(res['msg'])
                             }
                         }
@@ -151,6 +156,27 @@
             alert('아이디와 비밀번호를 제대로 입력해주세요.')
             return
         }
+    }
+
+    function login() {
+        $.ajax({
+            type: 'POST',
+            url: '/login',
+            data: {
+               id_give: $('.login_id_input').val(),
+                pw_give: $('.login_pw_input').val()
+            },
+            success: function (res) {
+                if (res['result'] == 'success') {
+                    token = $.cookie('token', res['token'])
+                    console.log(token)
+                    // goUserPage()
+                    window.location.href = '/main'
+                } else {
+                    alert(res['msg'])
+                }
+            }
+        })
     }
 
 
