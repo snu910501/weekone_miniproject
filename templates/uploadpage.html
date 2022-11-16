@@ -245,10 +245,6 @@
     }
 
     async function upload() {
-        // let photos = []
-        // let address = ''
-        // let tags = []
-        // let photo_url = []
 
         let photo_list = photos
         text = $('#textarea').val()
@@ -262,15 +258,9 @@
         }
 
         for (let i = 0; i < photo_list.length; i++) {
-            console.log('언제 실행되니')
             putFile(photo_list[i])
         }
 
-        // console.log(typeof photo_url)
-        // console.log(photo_url)
-        // console.log(`textogive : ${text}`)
-        // console.log(`태크 유알엘 있니 없니 ${tag_list}`)
-        console.log(`포토 유알엘 있니 없니 ${photo_url}`)
         await log()
 
     }

@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" href="../static/css/mainpage.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
 </head>
 <body>
 <div class="container">
     <div class="container_div">
+        <div class="popup_container"></div>
         <div class="main_container">
             <div class="main_container_div">
                 <div class="nav_container">
@@ -19,10 +22,10 @@
                         <div class="nav_right_container">
                             <div class="nav_right_container_div">
                                 <div class="nav_right_container_left">
-                                    <button class="post_btn"><a methods="POST" href="/post">POST</a></button>
+                                    <button class="post_btn"><a href="/write">POST</a></button>
                                 </div>
                                 <div class="nav_right_container_right">
-                                    <button class="logout_btn">LOGOUT</button>
+                                    <button class="logout_btn" onclick="logOut()">LOGOUT</button>
                                 </div>
                             </div>
                         </div>
@@ -35,16 +38,14 @@
                 <div class="search_container">
                     <div class="search_container_div">
                         <div class="search_input_container">
-                            <input type="text" id="search_input" placeholder="태그를 입력하세요">
+                            <input onkeyup="if(window.event.keyCode==13){search()}" type="text" id="search_input"
+                                   placeholder="태그를 입력하세요">
                         </div>
                     </div>
                 </div>
                 <div class="post_container">
                     <div class="post_container_div">
-                        <div class="test_div"></div>
-                        <div class="test_div"></div>
-                        <div class="test_div"></div>
-                        <div class="test_div"></div>
+
                     </div>
                 </div>
             </div>
@@ -52,4 +53,119 @@
     </div>
 </div>
 </body>
+
+<script>
+    let token = ''
+    window.onload = function () {
+
+        $.ajax({
+            type: 'GET',
+            url: '/post',
+            data: {},
+            success: function (res) {
+                if (res['result'] == 'success') {
+                    token = res['token']
+                    makePost(res['data'])
+                } else {
+                    console.log('데이터 로딩 실패')
+                }
+            }
+        })
+    }
+
+    function logOut() {
+        deleteCookie('token')
+        window.location.href = '/'
+    }
+
+    var deleteCookie = function (name) {
+        document.cookie = name + '=; expires=Thu, 01 Jan 1999 00:00:10 GMT;';
+    }
+
+    function makePost(data) {
+        let length = data.length
+
+        for (let i = 0; i < length; i++) {
+            for (let a = 0; a < data[i].length; a++) {
+                let doc = `<div onclick="showModal()" class="test_div"><img src="${data[i][a]['url'][0]}" alt=""></div>`
+                $('.post_container_div').append(doc)
+                // console.log(data[i][a]['url'][0])
+            }
+        }
+    }
+
+    function post() {
+        $.ajax({
+            type: 'GET',
+            url: '/write',
+            data: {},
+            success: function (res) {
+                if (res['result'] == 'success') {
+                    window.location.href = '/main/write'
+                }
+            }
+        })
+    }
+
+    function search() {
+        let search_tag = $('#search_input').val()
+
+        $.ajax({
+            type: 'POST',
+            url: '/searchtag',
+            data: {
+                tag_give: search_tag
+            },
+            success: function (res) {
+                if (res['result'] == 'success') {
+                    searchPost(res['data']['post'])
+                } else {
+                    console.log('err')
+                }
+            }
+        })
+    }
+
+    function searchPost(data) {
+        let posts = []
+
+        for (let i = 0; i < data.length; i++) {
+            $.ajax({
+                type: 'POST',
+                url: '/searchpost',
+                data: {
+                    postId_give: data[i]
+                },
+                success: function (res) {
+                    if (res['result'] == 'success') {
+                        posts.push(res['data'])
+                        console.log(posts)
+                        if (data.length == posts.length) {
+                            makeTagPost(posts)
+                        }
+                    } else {
+                        console.log('찾는게 없네요~')
+                    }
+                }
+            })
+        }
+
+    }
+
+    function makeTagPost(posts) {
+
+        $('.post_container_div').children().remove()
+        for (let i = 0; i < posts.length; i++) {
+
+            let doc = `<div onclick="showModal()" class="test_div"><img src="${posts[i].url[0]}" alt=""></div>`
+            $('.post_container_div').append(doc)
+        }
+    }
+
+    function showModal() {
+        console.log("1")
+    }
+
+
+</script>
 </html>
