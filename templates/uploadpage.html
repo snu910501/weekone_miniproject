@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <title>UploadPage</title>
     <link rel="stylesheet" href="../static/css/uploadpage.css">
-    <script src="https://code.jquery.com/jquery-3.6.1.js"
-            integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
+    <!--    <script src="https://code.jquery.com/jquery-3.6.1.js"-->
+    <!--            integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>-->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap"
           rel="stylesheet">
-    <script src="../static/js/tagify.js"></script>
+
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.809.0.min.js"></script>
 
     <script type="text/javascript"
@@ -90,7 +92,7 @@
                 </div>
                 <div class="tag_container">
                     <div class="tag_container_div">
-                        <input class="tag_input" name='tags'  placeholder='태그하세용'
+                        <input class="tag_input" name='tags' placeholder='태그하세용'
                                ,data-blacklist='.NET,PHP'>
 
                     </div>
@@ -107,9 +109,12 @@
 <script>
 
     let photos = []
-    let text = ''
     let address = ''
     let tags = []
+    let photo_url = []
+    let number = 0
+    let s3number = 0
+    let text = ''
 
     var input = document.querySelector('input[name="tags"]'),
         // init Tagify script on the above inputs
@@ -145,7 +150,7 @@
         }
     }
 
-    const putFile = file => {
+    async function putFile(file) {
         const albumBucketName = 'testinstabucket'; // S3의 버킷 이름
         const region = 'ap-northeast-2'; // 서울
         const accessKeyId = 'AKIARZNSTIKGG4JETEYJ'; // IAM에서 생성한 사용자의 accessKeyId
@@ -170,12 +175,18 @@
 
         promise.then(
             function (data) {
-                console.log("Successfully uploaded photo.");
-                console.log(data)
+                s3number ++
+                console.log("Successfully uploaded photo.")
+                photo_url.push(data.Location)
+                if(number == s3number) {
+                    uploadPost()
+                } else{
+                    return
+                }
             },
             function (err) {
                 return console.log("There was an error uploading your photo: ", err.message);
-            }
+            },
         );
     };
     window.onload = function () {
@@ -233,21 +244,61 @@
         });
     }
 
-    function upload(){
+    async function upload() {
+        // let photos = []
+        // let address = ''
+        // let tags = []
+        // let photo_url = []
 
-    // let address = ''
-    // let text = ''
-    // let address = ''
-    // let tags = []
+        let photo_list = photos
         text = $('#textarea').val()
+        let tag_list = tags
+        number = photo_list.length
         tag_list_child = $('.tagify').children()
 
         // console.log(tag_list_child[0].getAttribute('title'))
-        for(let i = 0; i < tag_list_child.length -1; i ++) {
-            tags.push(tag_list_child[0].getAttribute('title'))
+        for (let i = 0; i < tag_list_child.length - 1; i++) {
+            tags.push(tag_list_child[i].getAttribute('title'))
         }
-        $.ajax({
 
+        for (let i = 0; i < photo_list.length; i++) {
+            console.log('언제 실행되니')
+            putFile(photo_list[i])
+        }
+
+        // console.log(typeof photo_url)
+        // console.log(photo_url)
+        // console.log(`textogive : ${text}`)
+        // console.log(`태크 유알엘 있니 없니 ${tag_list}`)
+        console.log(`포토 유알엘 있니 없니 ${photo_url}`)
+        await log()
+
+    }
+
+    function log() {
+        console.log('hi')
+    }
+
+    async function uploadPost() {
+        let urls = photo_url
+        console.log(`ursl : ${urls}`)
+        await $.ajax({
+            type: 'POST',
+            url: '/post/upload',
+            data: {
+                url_give: urls,
+                text_give: text,
+                address_give: address,
+                tag_give: tags
+            },
+            success: function (res) {
+                if (res['result'] == 'success') {
+                    console.log('업데이트 성공')
+                    window.location.href = '/main'
+                } else {
+                    console.log('업데이트 실패')
+                }
+            }
         })
     }
 

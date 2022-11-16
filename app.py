@@ -50,13 +50,27 @@ def user_login():
         # print(id_receive)
         return jsonify({'result': 'success', 'token': encoded_jwt})
 
-@app.route('/upload')
-def upload() :
+@app.route('/post')
+def post() :
     return render_template('/uploadpage.html')
 
 @app.route('/main')
 def main() :
     return render_template('/mainpage.html')
+
+@app.route('/post/upload',methods=['POST'])
+def postupload():
+    token_receive = request.cookies.get('token')
+    payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+
+    url_receive = request.form.getlist('url_give[]')
+    text_receive = request.form['text_give']
+    address_receive = request.form['address_give']
+    tag_receive = request.form.getlist('tag_give[]')
+
+    db.user.update_one({'id':payload['id']},{'$push':{'post' : {'url': url_receive, 'text':text_receive,'address' : address_receive,'tag':tag_receive}}})
+
+    return jsonify({'result' : 'success'})
 
 
 
