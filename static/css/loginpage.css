@@ -24,6 +24,7 @@ input:focus{
     background-size: cover;
     background-repeat: no-repeat;
     overflow: hidden;
+    min-width: 1440px;
 }
 
 .container_div {
