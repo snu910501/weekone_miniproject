@@ -10,7 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap"
           rel="stylesheet">
-     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -163,7 +164,7 @@
             type: 'POST',
             url: '/login',
             data: {
-               id_give: $('.login_id_input').val(),
+                id_give: $('.login_id_input').val(),
                 pw_give: $('.login_pw_input').val()
             },
             success: function (res) {

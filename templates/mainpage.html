@@ -6,11 +6,48 @@
     <link rel="stylesheet" href="../static/css/mainpage.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
+    <!--    카카오 지도     -->
+    <script type="text/javascript"
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=68015be01dab0a555d47266aa18bd55a&libraries=services"></script>
+    <script src="../static/js/kakaoMap.js"></script>
 </head>
 <body>
 <div class="container">
     <div class="container_div">
-        <div class="popup_container"></div>
+        <div style="display: none" class="popup_container">
+            <div class="popup_contianer_div">
+                <div class="popup">
+                    <div class="popup_div">
+                        <div class="popup_img_container">
+                            <div class="popup_img_container_div">
+
+                            </div>
+                            <div class="prev" onclick="prev()"><img src="../static/img/hyemin/left_cursor.png" alt="">
+                            </div>
+                            <div class="next" onclick="next()"><img src="../static/img/hyemin/right_cursor.png" alt="">
+                            </div>
+                        </div>
+                        <div class="popup_text_container">
+                            <div class="popup_text_container_div"></div>
+                        </div>
+                        <div class="popup_tag_container">
+                            <div class="popup_tag_container_div"></div>
+                        </div>
+                        <div class="popup_map_container">
+                            <div id="map"></div>
+                        </div>
+                        <div class="popup_delete_container">
+                            <div style="display: none" class="popup_delete_container_div">
+                                <button onclick="delPost(event)" class="del_btn">삭제</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="exit_btn_container">
+                <button class="exit_btn" onclick="exit_modal()">X</button>
+            </div>
+        </div>
         <div class="main_container">
             <div class="main_container_div">
                 <div class="nav_container">
@@ -56,6 +93,13 @@
 
 <script>
     let token = ''
+    let post_data
+    let slides = document.querySelector('.popup_img_container_div')
+
+    let currentIndex = 0
+    let prevBtn = $('.prev')
+    let nextBtn = $('.next')
+
     window.onload = function () {
 
         $.ajax({
@@ -66,6 +110,7 @@
                 if (res['result'] == 'success') {
                     token = res['token']
                     makePost(res['data'])
+                    post_data = res['data']
                 } else {
                     console.log('데이터 로딩 실패')
                 }
@@ -87,7 +132,8 @@
 
         for (let i = 0; i < length; i++) {
             for (let a = 0; a < data[i].length; a++) {
-                let doc = `<div onclick="showModal()" class="test_div"><img src="${data[i][a]['url'][0]}" alt=""></div>`
+                let post_id = data[i][a]['post_id']
+                let doc = `<div  post_id="${post_id}" onclick="showModal(event)" class="test_div"><img src="${data[i][a]['url'][0]}" alt=""></div>`
                 $('.post_container_div').append(doc)
                 // console.log(data[i][a]['url'][0])
             }
@@ -157,15 +203,121 @@
         $('.post_container_div').children().remove()
         for (let i = 0; i < posts.length; i++) {
 
-            let doc = `<div onclick="showModal()" class="test_div"><img src="${posts[i].url[0]}" alt=""></div>`
+            let doc = `<div value="${i}" onclick="showModal()" class="test_div"><img src="${posts[i].url[0]}" alt=""></div>`
             $('.post_container_div').append(doc)
         }
     }
 
-    function showModal() {
-        console.log("1")
+    function exit_modal() {
+
+        $('.popup_container').hide()
+        $('.popup_img_container_div').removeClass('photo_one photo_two photo_three photo_four photo_five')
+        $('.popup_img_container_div').children().remove()
+        $('.popup_delete_container_div').hide()
+        currentIndex = 0
+        slides.style.left = 0 + 'px'
+
     }
 
+    function showModal(event) {
+        let value = event.path[1].getAttribute('post_id')
+        console.log(currentIndex)
+        $('.popup_container').show()
+        $.ajax({
+            type: 'POST',
+            url: '/searchpost',
+            data: {
+                postId_give: value
+            },
+            success: function (res) {
+                if (res['result'] == 'success') {
+                    makeModal(res['data'], res['user_id'], res['payload'])
+                } else {
+                    console.log('찾는게 없네요~')
+                }
+            }
+        })
+    }
 
+    function makeModal(data, id, payload) {
+        let tag = ''
+        console.log(data.url.length)
+
+        if (data.url.length == 1) {
+            $('.popup_img_container_div').addClass('photo_one')
+        } else if (data.url.length == 2) {
+            $('.popup_img_container_div').addClass('photo_two')
+        } else if (data.url.length == 3) {
+            $('.popup_img_container_div').addClass('photo_three')
+        } else if (data.url.length == 4) {
+            $('.popup_img_container_div').addClass('photo_four')
+        } else if (data.url.length == 5) {
+            $('.popup_img_container_div').addClass('photo_five')
+        }
+
+
+        for (let i = 0; i < data.url.length; i++) {
+            let url = data.url[i]
+            let doc = `<div post_id="${data.post_id}" class="popup_img_${i}" ><img src="${url}"></div>`
+            $('.popup_img_container_div').append(doc)
+        }
+        $('.popup_text_container_div').text(data['text'])
+        console.log(data['text'], data['tag'])
+
+        for (let i = 0; i < data['tag'].length; i++) {
+            tag += `#` + data['tag'][i] + ` `
+        }
+        $('.popup_tag_container_div').text(tag)
+        showMap(data['address'])
+
+        if (id == payload.id) {
+            $('.popup_delete_container_div').show()
+        } else {
+
+        }
+    }
+
+    function moveSlide(num) {
+        slides.style.left = -num * 450 + 'px';
+
+        currentIndex = num;
+    }
+
+    function next() {
+        let slide = document.querySelectorAll('.popup_img_container_div div')
+        let slideCount = slide.length
+        if (currentIndex < slideCount - 1) {
+
+            moveSlide(currentIndex + 1)
+        }
+
+    }
+
+    function prev() {
+        let slide = document.querySelectorAll('.popup_img_container_div div')
+        let slideCount = slide.length
+        if (currentIndex > 0) {
+
+            moveSlide(currentIndex - 1)
+        }
+    }
+
+    function delPost(event) {
+        // let post_id = document.querySelector('.popup_img_0').getAttribute('post_id')
+        // $.ajax({
+        //     type: 'POST',
+        //     url : '/delPost',
+        //     data : {
+        //         postId_give : post_id,
+        //     },
+        //     success: function(res){
+        //         if(res['result'] == 'success'){
+        //             console.log('성공')
+        //         }else {
+        //             console.log('실패')
+        //         }
+        //     }
+        // })
+    }
 </script>
 </html>

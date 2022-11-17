@@ -14,6 +14,7 @@ import hashlib
 import random
 import string
 
+
 @app.route('/')
 def home():
     return render_template('/loginpage.html')
@@ -66,18 +67,17 @@ def post():
     for x in user_info_list:
         user_post_list.append(x['post'])
 
-    return jsonify({'result': 'success', 'data': user_post_list,'token':payload})
+    return jsonify({'result': 'success', 'data': user_post_list, 'token': payload})
 
 
 @app.route('/main')
 def main():
-
     return render_template('/mainpage.html')
     # return jsonify({'result':'success', 'token' : token_receive})
 
+
 @app.route('/write', methods=['GET'])
 def postPage():
-
     return render_template('/uploadpage.html')
 
 
@@ -94,14 +94,15 @@ def postupload():
 
     # db 유저 콜렉션에 포스트 업데이트
     db.user.update_one({'id': payload['id']}, {
-        '$push': {'post': {'url': url_receive, 'text': text_receive, 'address': address_receive, 'tag': tag_receive,'post_id':post_id}}})
+        '$push': {'post': {'url': url_receive, 'text': text_receive, 'address': address_receive, 'tag': tag_receive,
+                           'post_id': post_id}}})
 
     # db tag 콜렉션에 tag 업데이트
-    for tag in tag_receive :
+    for tag in tag_receive:
         if bool(db.tag.find_one({'tag': tag})) != False:
-            db.tag.update_one({'tag':tag}, {'$push' : {'post' : post_id}})
-        else :
-            db.tag.insert_one({'tag':tag, 'post':[post_id]})
+            db.tag.update_one({'tag': tag}, {'$push': {'post': post_id}})
+        else:
+            db.tag.insert_one({'tag': tag, 'post': [post_id]})
     return jsonify({'result': 'success'})
 
 
@@ -109,25 +110,37 @@ def postupload():
 def searchTag():
     tag_receive = request.form['tag_give']
 
-    tag = db.tag.find_one({'tag':tag_receive},{'_id':False})
-    return jsonify({'result':'success','data':tag})
+    tag = db.tag.find_one({'tag': tag_receive}, {'_id': False})
+    return jsonify({'result': 'success', 'data': tag})
+
 
 @app.route('/searchpost', methods=['POST'])
 def searchPost():
+    token_receive = request.cookies.get('token')
+    payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
 
     postId_receive = request.form['postId_give']
-    posts= []
+    posts = []
     print(postId_receive)
     for data in db.user.find():
         for i in range(len(data['post'])):
             id = data['post'][i]['post_id']
             if postId_receive == id:
                 print('들어갑니다')
-                return jsonify({'result':'success','data':data['post'][i]})
+                return jsonify({'result': 'success', 'data': data['post'][i], 'user_id': data['id'],'payload': payload})
             # else:
             #     return jsonify({'result':'fail'})
-    return jsonify({'result':'fail'})
+    return jsonify({'result': 'fail'})
 
+# @app.route('/delPost', methods=['POST'])
+# def delPost() :
+#     postId_receive = request.form['postId_give']
+#     for data in db.user.find():
+#         for i in range(len(data['post'])):
+#             id = data['post'][i]['post_id']
+#             if postId_receive == id:
+#                 db.user.delete_one({'id':data['post'][i]['id']})
+#
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=7000, debug=True)
